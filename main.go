@@ -1,17 +1,15 @@
 package main
 
-import "fmt"
+import (
+	"time"
+)
 
 func main() {
 	kc := NewKubeletClient()
 
-	summary := kc.GetSummary()
-
-	for _, container := range summary.Node.SystemContainers {
-		fmt.Println(container.Name)
-	}
-
-	for _, pod := range summary.Pods {
-		fmt.Println(pod.Metadata.Name)
+	for range time.Tick(time.Second * 60) {
+		go func() {
+			kc.LogMetrics()
+		}()
 	}
 }

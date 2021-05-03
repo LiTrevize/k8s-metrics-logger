@@ -10,7 +10,7 @@ import (
 )
 
 func getSecretsToken() string {
-	return "eyJhbGciOiJSUzI1NiIsImtpZCI6ImN2Q29EOGgyRHZoME8zemo0Zlg0RlZyLTVLS0k1cWJJc1ltYUsxUnVoMFEifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJtZXRyaWNzLXNlcnZlci10b2tlbi1qcnhnayIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJtZXRyaWNzLXNlcnZlciIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6ImE3NTc4ZmM4LTZkMGQtNDEyMC05Y2Y2LTU1ZmVhMTY5MTZkMSIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDprdWJlLXN5c3RlbTptZXRyaWNzLXNlcnZlciJ9.AYjaVlF4n5_5y__O-boiVNe86SNYdkMPqgg7H-lG0puhcGKI4r3pSbNUuxuoaizBOj-YiES0EnY7jNKW0myPfZH6tWO1DuKX2Nu25zSYXrsD9dRvs4-9cM7BZTPw520c0e0kMkkGGH6SGu--i7hSjHUxu2opbaECnwpbDlkcltwx1Xd6VUmIJUMiU_eFwCl_f01KzKwBDbqTgdYZQe6shSBS578GQ6OALbMaieOVb7uHmhES_K8Rjif6k3CAcwZO49XQB0jbgMzJ-Z2gkLxrgU3UR5TwJXe-NVupOfZ9c6hAIDguNXea978xhNFD8o4XCYdfMrPN-SLcB0uJTerXKw"
+	return "eyJhbGciOiJSUzI1NiIsImtpZCI6ImN2Q29EOGgyRHZoME8zemo0Zlg0RlZyLTVLS0k1cWJJc1ltYUsxUnVoMFEifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJtZXRyaWNzLXNlcnZlci10b2tlbi1rYzlqeCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJtZXRyaWNzLXNlcnZlciIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjAyNmY5OWY1LWMxNTYtNDRkZC04MmU5LWM0Yjk1M2E2MzBlMCIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDprdWJlLXN5c3RlbTptZXRyaWNzLXNlcnZlciJ9.fpnrEPTniLLeZtyRvUy10AC3YTFBbNoL_BwEbY-z3o4gdYs_tRKVf3eBat3KScnh80m_JrE3WLs5RepynAoAcuksuvtMyL1RApSigGppi8zglRt2pHjooMP3cVAH8h6894gukLrseL6Cwc3C6yOQw0pDb9amvxsCyO4LLw_7aT2T3pwope09-mf_iJ63w0TAfvbE5DzPVajJF2Wlkav904LEK3dB6wt813pK6TA8TsqIOS74AUNoTyktBrjZWB-Mun2lg0coG4Ywki8x5k7Hp4FMIVo_4_zY2GdxViNyb2EUw-27bBZXjSGi8QNxfo2FOkuA7YFRHvhlS8w5rg-W6A"
 }
 
 type KubeletClient struct {
@@ -51,6 +51,29 @@ func (kc *KubeletClient) GetSummary() *SummaryType {
 		fmt.Println("Json parse error: ", err)
 	}
 	return &summary
+
+}
+
+func (kc *KubeletClient) LogMetrics() {
+	summary := kc.GetSummary()
+	if summary == nil {
+		return
+	}
+
+	nodeTag := map[string]string{"node": summary.Node.NodeName}
+
+	(&MetricsLog{"node_cpu_usage_nano_cores", nodeTag, summary.Node.CPU.UsageNanoCores, summary.Node.CPU.Time}).Log()
+
+	(&MetricsLog{"node_memory_usage_bytes", nodeTag, summary.Node.Memory.UsageBytes, summary.Node.Memory.Time}).Log()
+
+	for _, pod := range summary.Pods {
+		podTag := map[string]string{
+			"node":      summary.Node.NodeName,
+			"pod":       pod.Metadata.Name,
+			"namespace": pod.Metadata.Namespace}
+		(&MetricsLog{"pod_cpu_usage_nano_cores", podTag, pod.CPU.UsageNanoCores, pod.CPU.Time}).Log()
+		(&MetricsLog{"pod_memory_usage_bytes", podTag, pod.Memory.UsageBytes, pod.Memory.Time}).Log()
+	}
 
 }
 
