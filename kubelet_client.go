@@ -18,11 +18,11 @@ type KubeletClient struct {
 	Url    string
 }
 
-func NewKubeletClient() KubeletClient {
+func NewKubeletClient() *KubeletClient {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
-	return KubeletClient{
+	return &KubeletClient{
 		Client: &http.Client{Transport: tr},
 		Url:    "https://127.0.0.1:10250",
 	}
@@ -62,17 +62,17 @@ func (kc *KubeletClient) LogMetrics() {
 
 	nodeTag := map[string]string{"node": summary.Node.NodeName}
 
-	(&MetricsLog{"node_cpu_usage_nano_cores", nodeTag, summary.Node.CPU.UsageNanoCores, summary.Node.CPU.Time}).Log()
+	(&MetricsLog{"node_cpu_usage_nano_cores", nodeTag, summary.Node.CPU.UsageNanoCores, summary.Node.CPU.Time, nil}).Log()
 
-	(&MetricsLog{"node_memory_usage_bytes", nodeTag, summary.Node.Memory.UsageBytes, summary.Node.Memory.Time}).Log()
+	(&MetricsLog{"node_memory_usage_bytes", nodeTag, summary.Node.Memory.UsageBytes, summary.Node.Memory.Time, nil}).Log()
 
 	for _, pod := range summary.Pods {
 		podTag := map[string]string{
 			"node":      summary.Node.NodeName,
 			"pod":       pod.Metadata.Name,
 			"namespace": pod.Metadata.Namespace}
-		(&MetricsLog{"pod_cpu_usage_nano_cores", podTag, pod.CPU.UsageNanoCores, pod.CPU.Time}).Log()
-		(&MetricsLog{"pod_memory_usage_bytes", podTag, pod.Memory.UsageBytes, pod.Memory.Time}).Log()
+		(&MetricsLog{"pod_cpu_usage_nano_cores", podTag, pod.CPU.UsageNanoCores, pod.CPU.Time, nil}).Log()
+		(&MetricsLog{"pod_memory_usage_bytes", podTag, pod.Memory.UsageBytes, pod.Memory.Time, nil}).Log()
 	}
 
 }
