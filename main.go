@@ -5,11 +5,11 @@ import (
 )
 
 func main() {
-	kc := NewKubeletClient()
+	ml := NewMetricsLogger()
 
-	for range time.Tick(time.Second * 60) {
+	for range time.Tick(time.Second * 5) {
 		go func() {
-			kc.LogMetrics()
+			ml.LogMetrics()
 		}()
 	}
 }

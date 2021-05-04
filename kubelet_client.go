@@ -16,6 +16,7 @@ func getSecretsToken() string {
 type KubeletClient struct {
 	Client *http.Client
 	Url    string
+	Node   string
 }
 
 func NewKubeletClient() *KubeletClient {
@@ -50,6 +51,7 @@ func (kc *KubeletClient) GetSummary() *SummaryType {
 	if err != nil {
 		fmt.Println("Json parse error: ", err)
 	}
+	kc.Node = summary.Node.NodeName
 	return &summary
 
 }
