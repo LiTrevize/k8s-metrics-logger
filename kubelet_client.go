@@ -23,10 +23,12 @@ func NewKubeletClient() *KubeletClient {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
-	return &KubeletClient{
+	kc := KubeletClient{
 		Client: &http.Client{Transport: tr},
 		Url:    "https://127.0.0.1:10250",
 	}
+	kc.Node = kc.GetSummary().Node.NodeName
+	return &kc
 }
 
 func (kc *KubeletClient) GetSummary() *SummaryType {
@@ -51,7 +53,6 @@ func (kc *KubeletClient) GetSummary() *SummaryType {
 	if err != nil {
 		fmt.Println("Json parse error: ", err)
 	}
-	kc.Node = summary.Node.NodeName
 	return &summary
 
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/NVIDIA/gpu-monitoring-tools/bindings/go/nvml"
@@ -49,7 +48,7 @@ func (nc *NvmlClient) Init() error {
 	return nil
 }
 
-func (nc *NvmlClient) LogMetrics(node string) {
+func (nc *NvmlClient) LogDeviceInfo(node string) {
 	now := time.Now()
 
 	for i, device := range nc.Devices {
@@ -67,13 +66,19 @@ func (nc *NvmlClient) LogMetrics(node string) {
 			"clock_memory": fmt.Sprintf("%d MHz", *device.Clocks.Memory),
 		}
 		(&MetricsLog{"gpu_device_info", tag, nil, now, field}).Log()
+	}
+}
 
+func (nc *NvmlClient) LogMetrics(node string) {
+	now := time.Now()
+
+	for i, device := range nc.Devices {
 		// GPU usage
 		st, err := device.Status()
 		if err != nil {
 			continue
 		}
-		tag = map[string]string{
+		tag := map[string]string{
 			"node": node,
 			"GPU":  fmt.Sprint(i),
 			"UUID": device.UUID}
@@ -84,17 +89,5 @@ func (nc *NvmlClient) LogMetrics(node string) {
 		// fmt.Printf("%5d %5d %5d %5d %5d %5d %5d %5d %5d\n",
 		// 	i, *st.Power, *st.Temperature, *st.Utilization.GPU, *st.Utilization.Memory,
 		// 	*st.Utilization.Encoder, *st.Utilization.Decoder, *st.Clocks.Memory, *st.Clocks.Cores)
-	}
-}
-
-func (nc *NvmlClient) GetDeviceStatus() {
-	for i, device := range nc.Devices {
-		st, err := device.Status()
-		if err != nil {
-			log.Panicf("Error getting device %d status: %v\n", i, err)
-		}
-		fmt.Printf("%5d %5d %5d %5d %5d %5d %5d %5d %5d\n",
-			i, *st.Power, *st.Temperature, *st.Utilization.GPU, *st.Utilization.Memory,
-			*st.Utilization.Encoder, *st.Utilization.Decoder, *st.Clocks.Memory, *st.Clocks.Cores)
 	}
 }
