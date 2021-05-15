@@ -7,7 +7,7 @@ COPY . .
 
 RUN go build .
 
-FROM nvcr.io/nvidia/cuda:11.2.1-base-ubuntu20.04
+FROM nvcr.io/nvidia/cuda:10.2-base-ubuntu18.04
 
 COPY --from=0 /src/k8s-metrics-logger .
 
