@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"time"
 
 	"k8s.io/client-go/rest"
@@ -29,7 +30,7 @@ func NewKubeletClient() *KubeletClient {
 	kc := KubeletClient{
 		Client: &http.Client{Transport: tr},
 		Config: config,
-		Url:    "https://127.0.0.1:10250",
+		Url:    "https://" + os.Getenv("NODE_IP") + ":10250",
 	}
 	kc.Node = kc.GetSummary().Node.NodeName
 	return &kc
