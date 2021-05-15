@@ -5,9 +5,9 @@ ENV GOPROXY="https://goproxy.cn,direct"
 WORKDIR /src
 COPY . .
 
-RUN GOOS=linux CGO_ENABLED=0 go build .
+RUN go build .
 
-FROM ubuntu
+FROM nvcr.io/nvidia/cuda:11.2.1-base-ubuntu20.04
 
 COPY --from=0 /src/k8s-metrics-logger .
 
