@@ -129,7 +129,13 @@ spec:
           value: "kubernetes.default.svc"
         - name: KUBERNETES_SERVICE_PORT
           value: "443"
+        - name: NODE_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.hostIP
       nodeSelector:
         kubernetes.io/os: linux
+        nvidia.com/gpu: ""
       priorityClassName: system-cluster-critical
       serviceAccountName: metrics-monitoring
