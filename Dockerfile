@@ -1,10 +1,11 @@
 FROM golang:1.16
 ENV GOPROXY="https://goproxy.cn,direct"
 
+
 WORKDIR /src
 COPY . .
 
-RUN go build .
+RUN GOOS=linux CGO_ENABLED=0 go build .
 
 FROM ubuntu
 
