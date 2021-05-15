@@ -7,28 +7,36 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
-)
 
-func getSecretsToken() string {
-	return "eyJhbGciOiJSUzI1NiIsImtpZCI6ImN2Q29EOGgyRHZoME8zemo0Zlg0RlZyLTVLS0k1cWJJc1ltYUsxUnVoMFEifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJtZXRyaWNzLXNlcnZlci10b2tlbi1rYzlqeCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJtZXRyaWNzLXNlcnZlciIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjAyNmY5OWY1LWMxNTYtNDRkZC04MmU5LWM0Yjk1M2E2MzBlMCIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDprdWJlLXN5c3RlbTptZXRyaWNzLXNlcnZlciJ9.fpnrEPTniLLeZtyRvUy10AC3YTFBbNoL_BwEbY-z3o4gdYs_tRKVf3eBat3KScnh80m_JrE3WLs5RepynAoAcuksuvtMyL1RApSigGppi8zglRt2pHjooMP3cVAH8h6894gukLrseL6Cwc3C6yOQw0pDb9amvxsCyO4LLw_7aT2T3pwope09-mf_iJ63w0TAfvbE5DzPVajJF2Wlkav904LEK3dB6wt813pK6TA8TsqIOS74AUNoTyktBrjZWB-Mun2lg0coG4Ywki8x5k7Hp4FMIVo_4_zY2GdxViNyb2EUw-27bBZXjSGi8QNxfo2FOkuA7YFRHvhlS8w5rg-W6A"
-}
+	"k8s.io/client-go/rest"
+)
 
 type KubeletClient struct {
 	Client *http.Client
+	Config *rest.Config
 	Url    string
 	Node   string
 }
 
 func NewKubeletClient() *KubeletClient {
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		panic(err.Error())
+	}
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	kc := KubeletClient{
 		Client: &http.Client{Transport: tr},
+		Config: config,
 		Url:    "https://127.0.0.1:10250",
 	}
 	kc.Node = kc.GetSummary().Node.NodeName
 	return &kc
+}
+
+func (kc *KubeletClient) GetSecretsToken() string {
+	return kc.Config.BearerToken
 }
 
 func (kc *KubeletClient) GetSummary() *SummaryType {
@@ -36,7 +44,7 @@ func (kc *KubeletClient) GetSummary() *SummaryType {
 	if err != nil {
 		fmt.Println("request creation error: ", err)
 	}
-	req.Header.Add("Authorization", "Bearer "+getSecretsToken())
+	req.Header.Add("Authorization", "Bearer "+kc.GetSecretsToken())
 	rsp, err := kc.Client.Do(req)
 	if err != nil {
 		fmt.Println("request error: ", err)
