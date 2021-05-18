@@ -9,18 +9,15 @@ import (
 
 func main() {
 	nc := util.NewNvmlClient()
-	hostname, err := os.Hostname()
-	if err != nil {
-		panic(err)
-	}
-	nc.LogDeviceInfo(hostname)
-	nc.LogMetrics(hostname)
+	nodename := os.Getenv("NODE_NAME")
+	nc.LogDeviceInfo(nodename)
+	nc.LogMetrics(nodename)
 	go func() {
 		for range time.Tick(time.Hour) {
-			nc.LogDeviceInfo(hostname)
+			nc.LogDeviceInfo(nodename)
 		}
 	}()
 	for range time.Tick(time.Minute) {
-		nc.LogMetrics(hostname)
+		nc.LogMetrics(nodename)
 	}
 }

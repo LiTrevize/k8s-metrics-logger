@@ -134,11 +134,15 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: status.hostIP
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
       - name: nvidia-gpu-logger
         image: jimmyuli/nvidia-gpu-logger:latest
         imagePullPolicy: Always
       nodeSelector:
         kubernetes.io/os: linux
-        nvidia.com/gpu: ""
       priorityClassName: system-cluster-critical
       serviceAccountName: metrics-monitoring
