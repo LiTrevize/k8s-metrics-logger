@@ -5,10 +5,10 @@ ENV GOPROXY="https://goproxy.cn,direct"
 WORKDIR /src
 COPY . .
 
-RUN go build .
+RUN cd nvidia_gpu_logger && go build .
 
 FROM nvcr.io/nvidia/cuda:10.0-base-ubuntu18.04
 
-COPY --from=0 /src/k8s-metrics-logger .
+COPY --from=0 /src/nvidia_gpu_logger/nvidia_gpu_logger .
 
-ENTRYPOINT ["./k8s-metrics-logger"]
+ENTRYPOINT ["./nvidia_gpu_logger"]

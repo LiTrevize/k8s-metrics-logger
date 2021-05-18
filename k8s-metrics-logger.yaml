@@ -121,9 +121,9 @@ spec:
         - key: node-role.kubernetes.io/master
           effect: NoSchedule
       containers:
-      - name: metrics-logger
-        image: jimmyuli/k8s-metrics-logger:latest
-        imagePullPolicy: IfNotPresent
+      - name: cadvisor-logger
+        image: jimmyuli/cadvisor-logger:latest
+        imagePullPolicy: Always
         env:
         - name: KUBERNETES_SERVICE_HOST
           value: "kubernetes.default.svc"
@@ -134,6 +134,9 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: status.hostIP
+      - name: nvidia-gpu-logger
+        image: jimmyuli/nvidia-gpu-logger:latest
+        imagePullPolicy: Always
       nodeSelector:
         kubernetes.io/os: linux
         nvidia.com/gpu: ""
