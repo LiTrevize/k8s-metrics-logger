@@ -16,7 +16,6 @@ type KubeletClient struct {
 	Client *http.Client
 	Config *rest.Config
 	Url    string
-	Node   string
 }
 
 func NewKubeletClient() *KubeletClient {
@@ -32,7 +31,15 @@ func NewKubeletClient() *KubeletClient {
 		Config: config,
 		Url:    "https://" + os.Getenv("NODE_IP") + ":10250",
 	}
-	kc.Node = kc.GetSummary().Node.NodeName
+	_, err = kc.Request("GET", "/stats/summary")
+	if err != nil {
+		fmt.Println("Warning: Cannot reach kubelet, switch to edgecore")
+		kc.Url = "https://" + os.Getenv("NODE_IP") + ":10350"
+		_, err = kc.Request("GET", "/stats/summary")
+		if err != nil {
+			panic(fmt.Sprintf("Connection error: Cannot reach either kubelet or edgecore, %+v", err))
+		}
+	}
 	return &kc
 }
 
@@ -40,13 +47,18 @@ func (kc *KubeletClient) GetSecretsToken() string {
 	return kc.Config.BearerToken
 }
 
-func (kc *KubeletClient) GetSummary() *SummaryType {
-	req, err := http.NewRequest("GET", kc.Url+"/stats/summary", nil)
+func (kc *KubeletClient) Request(method, urlPrefix string) (*http.Response, error) {
+	req, err := http.NewRequest(method, kc.Url+urlPrefix, nil)
 	if err != nil {
 		fmt.Println("request creation error: ", err)
+		return nil, err
 	}
 	req.Header.Add("Authorization", "Bearer "+kc.GetSecretsToken())
-	rsp, err := kc.Client.Do(req)
+	return kc.Client.Do(req)
+}
+
+func (kc *KubeletClient) GetSummary() *SummaryType {
+	rsp, err := kc.Request("GET", "/stats/summary")
 	if err != nil {
 		fmt.Println("request error: ", err)
 		return nil
