@@ -34,7 +34,7 @@ func NewKubeletClient() *KubeletClient {
 	_, err = kc.Request("GET", "/stats/summary")
 	if err != nil {
 		fmt.Println("Warning: Cannot reach kubelet, switch to edgecore")
-		kc.Url = "https://" + os.Getenv("NODE_IP") + ":10350"
+		kc.Url = "http://" + os.Getenv("NODE_IP") + ":10350"
 		_, err = kc.Request("GET", "/stats/summary")
 		if err != nil {
 			panic(fmt.Sprintf("Connection error: Cannot reach either kubelet or edgecore, %+v", err))
