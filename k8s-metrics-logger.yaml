@@ -115,6 +115,9 @@ spec:
       labels:
         app: metrics-logger
     spec:
+      restartPolicy: "Always"
+      priorityClassName: system-cluster-critical
+      serviceAccountName: metrics-monitoring
       tolerations:
         # this toleration is to have the daemonset runnable on master nodes
         # remove it if your masters can't run pods
@@ -144,5 +147,3 @@ spec:
         imagePullPolicy: Always
       nodeSelector:
         kubernetes.io/os: linux
-      priorityClassName: system-cluster-critical
-      serviceAccountName: metrics-monitoring
