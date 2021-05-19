@@ -145,5 +145,17 @@ spec:
       - name: nvidia-gpu-logger
         image: jimmyuli/nvidia-gpu-logger:latest
         imagePullPolicy: Always
+        env:
+        - name: NODE_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.hostIP
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
       nodeSelector:
         kubernetes.io/os: linux
+      hostNetwork: true

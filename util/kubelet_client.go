@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"time"
 
 	"k8s.io/client-go/rest"
@@ -29,12 +28,12 @@ func NewKubeletClient() *KubeletClient {
 	kc := KubeletClient{
 		Client: &http.Client{Transport: tr},
 		Config: config,
-		Url:    "https://" + os.Getenv("NODE_IP") + ":10250",
+		Url:    "https://127.0.0.1:10250",
 	}
 	_, err = kc.Request("GET", "/stats/summary")
 	if err != nil {
 		fmt.Println("Warning: Cannot reach kubelet, switch to edgecore")
-		kc.Url = "http://" + os.Getenv("NODE_IP") + ":10350"
+		kc.Url = "http://127.0.0.1:10350"
 		_, err = kc.Request("GET", "/stats/summary")
 		if err != nil {
 			panic(fmt.Sprintf("Connection error: Cannot reach either kubelet or edgecore, %+v", err))
